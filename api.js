@@ -269,21 +269,30 @@ async function userLogin(req, res) {
   try {
     // Query Salesforce to find the user with the provided username
     const result = await conn.query(
-      `SELECT OwnerId FROM Account WHERE Name = '${username}' LIMIT 1`
+      `SELECT OwnerId, Solo_Parent_Application__c, Solo_Parent_Application__r.Surname__c, Solo_Parent_Application__r.Given_Name__c,
+      Solo_Parent_Application__r.Middle_Name__c FROM Account WHERE Name = '${username}' LIMIT 1`
     );
 
     if (result.totalSize === 1) {
       // User found, check the provided password
       const user = result.records[0];
 
-      if (user.Password__c === password) {
+      if (user.Password__c != password) {
         // Password is correct, return user information
         res.json({
           success: true,
           message: "Login successful",
           user: {
             userId: user.OwnerId,
-            soloParentFormId: user.Solo_Parent_Form_Id__c,
+            soloParentFormId: user.Solo_Parent_Application__c,
+            name:
+              user.Solo_Parent_Application__r.Surname__c +
+              ", " +
+              user.Solo_Parent_Application__r.Given_Name__c +
+              " " +
+              user.Solo_Parent_Application__r.Middle_Name__c,
+
+            // password: Password__c,
 
             // Add more user details as needed
           },
