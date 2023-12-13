@@ -283,6 +283,7 @@ async function userLogin(req, res) {
           message: "Login successful",
           user: {
             userId: user.OwnerId,
+            soloParentFormId: user.Solo_Parent_Form_Id__c,
 
             // Add more user details as needed
           },
