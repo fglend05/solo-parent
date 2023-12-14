@@ -145,6 +145,8 @@ app.post("/api/solo-parent/create-user-ticket", createUserTickets);
 
 app.post("/api/solo-parent/ticket-notification", ticketNotif);
 
+app.use("/.netlify/api");
+
 app.listen(PORT, () => {
   logger.info(`Server is running on http://localhost:${PORT}`);
   console.log(`Server is running at http://localhost:${PORT}`);
