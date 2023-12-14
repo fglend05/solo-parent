@@ -150,7 +150,7 @@ router.post("/api/solo-parent/create-user-ticket", createUserTickets);
 
 router.post("/api/solo-parent/ticket-notification", ticketNotif);
 
-router.use(`/.netlify/functions/api`, router);
+router.use(`/.netlify/functions/index`, router);
 
 module.exports = app;
 module.exports.handler = serverless(app);
