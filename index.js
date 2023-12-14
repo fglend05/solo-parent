@@ -53,14 +53,10 @@ app.get("/", (req, res) => {
 //   }
 //   next();
 // });
+//Login
+app.post("/api/login", userLogin);
 
 app.post("/api/create-solo-parent-account", createSoloParentAccount);
-
-app.post("/api/upload", function (req, res) {
-  console.log(req.files);
-  res.json(req.files);
-  res.send("UPLOADED!!!");
-});
 
 //Endpoint for getting user data by ID
 app.get("/api/read-solo-parent-account/:userId", async (req, res, next) => {
@@ -148,9 +144,6 @@ app.get("/api/solo-parent/tickets/:ticketNumber", async (req, res, next) => {
 app.post("/api/solo-parent/create-user-ticket", createUserTickets);
 
 app.post("/api/solo-parent/ticket-notification", ticketNotif);
-
-//Login
-app.post("/api/login", userLogin);
 
 app.listen(PORT, () => {
   logger.info(`Server is running on http://localhost:${PORT}`);
