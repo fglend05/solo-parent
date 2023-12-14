@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const multer = require("multer");
 const pino = require("pino");
 const expressPino = require("express-pino-logger");
+const serverless = require("serverless-http");
 var cors = require("cors");
 const {
   createSoloParentAccount,
@@ -30,13 +31,14 @@ const { Pool } = require("pg");
 
 const PORT = 3001;
 const app = express();
+const router = express.Router();
 app.use(expressLogger);
 app.use(cors());
 app.use(fileUpload());
 app.use(bodyParser.json());
 
 //Index Page
-app.get("/", (req, res) => {
+router.get("/", (req, res) => {
   res.send("Force sent");
 });
 
@@ -54,12 +56,12 @@ app.get("/", (req, res) => {
 //   next();
 // });
 //Login
-app.post("/api/login", userLogin);
+router.post("/api/login", userLogin);
 
-app.post("/api/create-solo-parent-account", createSoloParentAccount);
+router.post("/api/create-solo-parent-account", createSoloParentAccount);
 
 //Endpoint for getting user data by ID
-app.get("/api/read-solo-parent-account/:userId", async (req, res, next) => {
+router.get("/api/read-solo-parent-account/:userId", async (req, res, next) => {
   const userId = req.params.userId;
 
   try {
@@ -77,7 +79,7 @@ app.get("/api/read-solo-parent-account/:userId", async (req, res, next) => {
 });
 
 // Endpoint to read all user data
-app.get("/api/read-all-solo-parent-data", async (req, res, next) => {
+router.get("/api/read-all-solo-parent-data", async (req, res, next) => {
   try {
     const allData = await readAllSoloParentData();
     res.json(allData);
@@ -87,7 +89,7 @@ app.get("/api/read-all-solo-parent-data", async (req, res, next) => {
 });
 
 // Endpoint to delete user data by ID
-app.delete(
+router.delete(
   "/api/delete-solo-parent-account/:userId",
   async (req, res, next) => {
     const userId = req.params.userId;
@@ -108,23 +110,26 @@ app.delete(
 );
 
 // Endpoint to update user data
-app.put("/api/update-solo-parent-account/:userId", async (req, res, next) => {
-  const userId = req.params.userId;
-  const updatedData = req.body; // Updated data should be sent in the request body
+router.put(
+  "/api/update-solo-parent-account/:userId",
+  async (req, res, next) => {
+    const userId = req.params.userId;
+    const updatedData = req.body; // Updated data should be sent in the request body
 
-  try {
-    const success = await updateSoloParentData(userId, updatedData);
-    if (success) {
-      res.sendStatus(200); // Send a success response
-    } else {
-      res.status(500).send("Failed to update user data"); // Send an error response
+    try {
+      const success = await updateSoloParentData(userId, updatedData);
+      if (success) {
+        res.sendStatus(200); // Send a success response
+      } else {
+        res.status(500).send("Failed to update user data"); // Send an error response
+      }
+    } catch (error) {
+      next(error);
     }
-  } catch (error) {
-    next(error);
   }
-});
+);
 
-app.get("/api/solo-parent/tickets/:ticketNumber", async (req, res, next) => {
+router.get("/api/solo-parent/tickets/:ticketNumber", async (req, res, next) => {
   const ticketNumber = req.params.ticketNumber;
 
   try {
@@ -141,13 +146,11 @@ app.get("/api/solo-parent/tickets/:ticketNumber", async (req, res, next) => {
   }
 });
 
-app.post("/api/solo-parent/create-user-ticket", createUserTickets);
+router.post("/api/solo-parent/create-user-ticket", createUserTickets);
 
-app.post("/api/solo-parent/ticket-notification", ticketNotif);
+router.post("/api/solo-parent/ticket-notification", ticketNotif);
 
-app.use("/.netlify/api");
+router.use(`/.netlify/functions/api`, router);
 
-app.listen(PORT, () => {
-  logger.info(`Server is running on http://localhost:${PORT}`);
-  console.log(`Server is running at http://localhost:${PORT}`);
-});
+module.exports = app;
+module.exports.handler = serverless(app);
