@@ -16,7 +16,7 @@ const {
   fetchUserTickets,
   createUserTickets,
   ticketNotif,
-} = require("./api");
+} = require("./routes");
 
 const logger = pino();
 const expressLogger = expressPino({ logger });
