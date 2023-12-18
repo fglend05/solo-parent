@@ -345,9 +345,9 @@ async function userLogin(req, res) {
       // User found, check the provided password
       const user = result.records[0];
 
-      // const trimmedEnteredPassword = password.trim();
+      const trimmedEnteredPassword = password.trim();
 
-      if (user.Password__c === password) {
+      if (user.Password__c != trimmedEnteredPassword) {
         // Password is correct, return user information
         res.json({
           success: true,
@@ -373,7 +373,7 @@ async function userLogin(req, res) {
           success: false,
           message: "Incorrect password.",
         });
-        res.json(password);
+        res.json(trimmedEnteredPassword);
       }
     } else {
       // User not found or invalid credentials
