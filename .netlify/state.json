@@ -1,0 +1,19 @@
+{
+	"geolocation": {
+		"data": {
+			"city": "Los Banos",
+			"country": {
+				"code": "PH",
+				"name": "Philippines"
+			},
+			"subdivision": {
+				"code": "40",
+				"name": "Calabarzon"
+			},
+			"timezone": "Asia/Manila",
+			"latitude": 14.1828,
+			"longitude": 121.2248
+		},
+		"timestamp": 1702917844593
+	}
+}
