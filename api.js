@@ -171,34 +171,34 @@ async function createSoloParentAccount(req, res, next) {
     //call user id for the Relationship between the user, family composition and requirements
     const soloParentFormId = userAccountResp.id;
     const soloParentAccountId = userAccountResp.OwnerId;
-    // console.log(familyComposition);
-    // // Start Fam Composition
-    // const familyMembersData = familyComposition.map((familyMember) => ({
-    //   Solo_Parent_Application_Form__c: soloParentFormId, // Use the ID of the master record
-    //   Name: familyMember.name,
-    //   Age__c: familyMember.age,
-    //   Sex__c: familyMember.sex,
-    //   Relationship__c: familyMember.relationShip,
-    //   Highest_Educational_Attainment__c: familyMember.educationalattainment,
-    //   Occupation__c: familyMember.occupation,
-    //   Monthly_Income__c: familyMember.monthlyIncome,
-    // }));
+    console.log(familyComposition);
+    // Start Fam Composition
+    const familyMembersData = familyComposition.map((familyMember) => ({
+      Solo_Parent_Application_Form__c: soloParentFormId, // Use the ID of the master record
+      Name: familyMember.name,
+      Age__c: familyMember.age,
+      Sex__c: familyMember.sex,
+      Relationship__c: familyMember.relationShip,
+      Highest_Educational_Attainment__c: familyMember.educationalAttainment,
+      Occupation__c: familyMember.occupation,
+      Monthly_Income__c: familyMember.monthlyIncome,
+    }));
 
-    // const familyMembersRespArray = await Promise.all(
-    //   familyMembersData.map((familyMemberData) =>
-    //     conn.sobject("Family_Member__c").create(familyMemberData)
-    //   )
-    // );
+    const familyMembersRespArray = await Promise.all(
+      familyMembersData.map((familyMemberData) =>
+        conn.sobject("Family_Member__c").create(familyMemberData)
+      )
+    );
 
-    // // Check if any of the family members failed to be created
-    // if (familyMembersRespArray.some((resp) => !resp.success)) {
-    //   // Rollback: Delete the user account if family member creation fails
-    //   await conn
-    //     .sobject("Solo_Parent_Application_Form__c")
-    //     .destroy([soloParentFormId]);
-    //   res.status(500).send("Failed to add family members");
-    //   return;
-    // }
+    // Check if any of the family members failed to be created
+    if (familyMembersRespArray.some((resp) => !resp.success)) {
+      // Rollback: Delete the user account if family member creation fails
+      await conn
+        .sobject("Solo_Parent_Application_Form__c")
+        .destroy([soloParentFormId]);
+      res.status(500).send("Failed to add family members");
+      return;
+    }
 
     //End Fam Composition
 

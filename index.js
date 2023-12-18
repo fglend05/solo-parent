@@ -24,7 +24,7 @@ const expressLogger = expressPino({ logger });
 const storage = multer.memoryStorage(); // Use memory storage to store files in memory
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { fileSize: 30 * 1024 * 1024 },
 });
 
 const { Pool } = require("pg");
@@ -58,7 +58,16 @@ app.get("/", (req, res) => {
 
 app.post("/api/login", userLogin);
 
-app.post("/api/create-solo-parent-account", createSoloParentAccount);
+app.post(
+  "/api/create-solo-parent-account",
+  upload.fields([
+    {
+      name: "voters",
+      maxCount: 1,
+    },
+  ]),
+  createSoloParentAccount
+);
 
 //Endpoint for getting user data by ID
 app.get("/api/read-solo-parent-account/:userId", async (req, res, next) => {
@@ -159,7 +168,6 @@ app.get("/api/solo-parent/showalltickets/:userId", async (req, res, next) => {
     next(error);
   }
 });
-app.post("/api/create-user-ticket", createUserTickets);
 
 app.post("/api/solo-parent/create-user-ticket", createUserTickets);
 
