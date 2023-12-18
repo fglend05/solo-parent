@@ -15,6 +15,7 @@ const {
   fetchUserTickets,
   createUserTickets,
   ticketNotif,
+  fetchAllUserTickets,
 } = require("./api");
 
 const logger = pino();
@@ -54,6 +55,7 @@ app.get("/", (req, res) => {
 //   next();
 // });
 //Login
+
 app.post("/api/login", userLogin);
 
 app.post("/api/create-solo-parent-account", createSoloParentAccount);
@@ -140,6 +142,24 @@ app.get("/api/solo-parent/tickets/:ticketNumber", async (req, res, next) => {
     next(error);
   }
 });
+
+app.get("/api/solo-parent/showalltickets/:userId", async (req, res, next) => {
+  const userId = req.params.userId;
+
+  try {
+    const userTickets = await fetchAllUserTickets(userId);
+
+    if (!userTickets) {
+      res.status(404).send("Tickets not found");
+      return;
+    }
+
+    res.json(userTickets);
+  } catch (error) {
+    next(error);
+  }
+});
+app.post("/api/create-user-ticket", createUserTickets);
 
 app.post("/api/solo-parent/create-user-ticket", createUserTickets);
 

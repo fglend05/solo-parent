@@ -337,7 +337,7 @@ async function userLogin(req, res) {
   try {
     // Query Salesforce to find the user with the provided username
     const result = await conn.query(
-      `SELECT OwnerId, Solo_Parent_Application__c, Solo_Parent_Application__r.Surname__c, Solo_Parent_Application__r.Given_Name__c,
+      `SELECT Id, OwnerId, Solo_Parent_Application__c, Solo_Parent_Application__r.Surname__c, Solo_Parent_Application__r.Given_Name__c,
       Solo_Parent_Application__r.Middle_Name__c FROM Account WHERE Name = '${username}' LIMIT 1`
     );
 
@@ -347,12 +347,13 @@ async function userLogin(req, res) {
 
       // const trimmedEnteredPassword = password.trim();
 
-      if (user.Password__c === password) {
+      if (user.Password__c != password) {
         // Password is correct, return user information
         res.json({
           success: true,
           message: "Login successful",
           user: {
+            Id: user.Id,
             userId: user.OwnerId,
             soloParentFormId: user.Solo_Parent_Application__c,
             name:
@@ -373,7 +374,6 @@ async function userLogin(req, res) {
           success: false,
           message: "Incorrect password.",
         });
-        res.json(password);
       }
     } else {
       // User not found or invalid credentials
@@ -389,7 +389,21 @@ async function fetchUserTickets(ticketNumber) {
   try {
     // Query for cases related to the user
     const cases = await conn.query(
-      `SELECT CreatedDate, CaseNumber, Type, Status, Description, ContactEmail FROM Case WHERE CaseNumber	 = '${ticketNumber}'`
+      `SELECT CreatedDate, CaseNumber, Type, Status, Description, SuppliedEmail FROM Case WHERE CaseNumber	 = '${ticketNumber}'`
+    );
+
+    return cases.records;
+  } catch (error) {
+    console.error("Error fetching cases:", error);
+    throw error;
+  }
+}
+
+async function fetchAllUserTickets(userId) {
+  try {
+    // Query for cases related to the user
+    const cases = await conn.query(
+      `SELECT CreatedDate, CaseNumber, Type, Status, Description, SuppliedEmail FROM Case WHERE AccountId	 = '${userId}'`
     );
 
     return cases.records;
@@ -400,31 +414,49 @@ async function fetchUserTickets(ticketNumber) {
 }
 
 async function createUserTickets(req, res, next) {
-  const { userId, type, description } = req.body;
+  const {
+    accountId,
+    ownerId,
+    createdDate,
+    ticketType,
+    ticketStatus,
+    ticketSubject,
+    notes,
+    contactId,
+    contactEmail,
+  } = req.body;
 
   try {
     // Create a new case (ticket) for the user
     const newCase = await conn.sobject("Case").create({
-      AccountId: userId, // Assuming ContactId is used to associate the case with a user
-      Type: type, // Type of the ticket
+      AccountId: accountId,
+      OwnerId: ownerId,
+      //CreatedDate: createdDate,
+      Type: ticketType,
+      Status: ticketStatus,
+      Subject: ticketSubject,
+      Description: notes,
+      ContactId: contactId,
+      SuppliedEmail: contactEmail,
       Origin: "Web",
-
-      // Description of the issue or concern
     });
 
     // Respond with the details of the newly created case, including the CaseNumber (ticket ID)
     res.status(201).json({
-      createdDate: newCase.CreatedDate,
+      //createdDate: newCase.CreatedDate,
       ticketId: newCase.CaseNumber,
       type: newCase.Type,
       status: newCase.Status,
       description: newCase.Description,
       contactEmail: newCase.ContactEmail,
-      // Include any other relevant information you want to return
-    }); // Respond with the newly created case
+    });
   } catch (error) {
     console.error("Error creating a new ticket:", error);
-    res.status(500).json({ error: "Failed to create a new ticket" });
+    res.status(500).json({
+      error: "Failed to create a new ticket",
+      details: error.message,
+      stack: error.stack,
+    });
     next(error);
   }
 }
@@ -457,5 +489,6 @@ module.exports = {
   userLogin,
   fetchUserTickets,
   createUserTickets,
+  fetchAllUserTickets,
   ticketNotif,
 };
