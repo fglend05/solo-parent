@@ -133,7 +133,7 @@ async function createSoloParentAccount(req, res, next) {
       Place_of_Birth__c: personalInfo.placeOfBirth,
       Religion__c: personalInfo.religion,
       Mobile_Number__c: personalInfo.mobileNumber,
-      Identification_Card_Number__c: "00",
+      Identification_Card_Number__c: personalInfo.idCardNumber,
       Identification_Card_Type__c: personalInfo.idCardType,
       Landline_Number__c: personalInfo.landlineNumber,
       Present_Address__c: personalInfo.presentAddress,
